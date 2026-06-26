@@ -1,0 +1,17 @@
+from app import db
+from app.models import Admin
+from werkzeug.security import generate_password_hash
+
+# Membuat baris data admin baru dengan enkripsi lokal komputer Anda
+admin_baru = Admin(
+    username='admin', 
+    password=generate_password_hash('admin123'),
+    email='wibowoprawiro4@gmail.com'
+)
+
+# Simpan ke database MySQL
+db.session.add(admin_baru)
+db.session.commit()
+print("Akun sukses dibuat!")
+
+xopw tlev fbek yhtj

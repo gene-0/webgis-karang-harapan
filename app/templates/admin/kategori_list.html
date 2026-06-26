@@ -1,0 +1,500 @@
+{% extends 'admin/base_admin.html' %} {% block title %}Kelola Kategori{%
+endblock %} {% block page_title %}Kelola Kategori{% endblock %} {% block content
+%}
+<div class="row g-4" style="animation: fadeSlideUp 0.4s ease both">
+	<div
+		class="{{ 'col-lg-8 col-xl-6 mx-auto' if kategori_edit else 'col-lg-4 col-md-5' }}"
+	>
+		<div
+			class="bento-card"
+			style="
+				padding: 28px;
+				background: rgba(255, 255, 255, 0.06);
+				backdrop-filter: blur(20px);
+				border: 1px solid rgba(255, 255, 255, 0.1);
+				border-radius: 14px;
+				box-shadow: var(--shadow-md);
+			"
+		>
+			<div
+				class="mb-4 pb-2"
+				style="border-bottom: 1px solid rgba(255, 255, 255, 0.1)"
+			>
+				<div class="d-flex align-items-center gap-2 mb-1">
+					<div
+						style="width: 26px; height: 26px; border-radius: 6px; background: {{ 'rgba(212, 168, 67, 0.15)' if kategori_edit else 'rgba(22, 163, 74, 0.15)' }}; display: flex; align-items: center; justify-content: center;"
+					>
+						<i
+							class="fas {{ 'fa-tags' if kategori_edit else 'fa-plus-circle' }}"
+							style="color: {{ '#d4a843' if kategori_edit else '#22c55e' }}; font-size: 12px;"
+						></i>
+					</div>
+					<p
+						class="bento-section-label mb-0"
+						style="
+							font-size: 10px;
+							color: #9aaa8a;
+							letter-spacing: 0.5px;
+							text-transform: uppercase;
+						"
+					>
+						Aksi Kontrol
+					</p>
+				</div>
+				<h5
+					style="
+						font-weight: 700;
+						color: #f0ece4;
+						margin-top: 5px;
+						margin-bottom: 0;
+					"
+				>
+					{{ 'Ubah Data Kategori' if kategori_edit else 'Tambah Kategori Baru'
+					}}
+				</h5>
+			</div>
+
+			<form
+				method="POST"
+				action="{{ url_for('admin.kategori_edit', id=kategori_edit.id) if kategori_edit else url_for('admin.kategori_tambah') }}"
+			>
+				<div class="mb-3">
+					<label
+						class="form-label small"
+						style="color: #f0ece4; font-weight: 500; margin-bottom: 6px"
+						>Nama Kategori</label
+					>
+					<input
+						type="text"
+						name="nama_kategori"
+						class="form-control text-white"
+						placeholder="Contoh: Fasilitas Kesehatan"
+						value="{{ kategori_edit.nama_kategori if kategori_edit else '' }}"
+						style="
+							height: 42px;
+							background: rgba(0, 0, 0, 0.2);
+							border: 1px solid rgba(255, 255, 255, 0.1);
+							border-radius: 8px;
+						"
+						required
+					/>
+				</div>
+
+				<div class="mb-3">
+					<label
+						class="form-label small"
+						style="color: #f0ece4; font-weight: 500; margin-bottom: 6px"
+						>Icon (FontAwesome Class)</label
+					>
+					<div class="position-relative">
+						<input
+							type="text"
+							name="icon"
+							class="form-control text-white"
+							placeholder="Contoh: fa-hospital atau fa-school"
+							value="{{ kategori_edit.icon if kategori_edit else '' }}"
+							style="
+								padding-left: 38px;
+								height: 42px;
+								background: rgba(0, 0, 0, 0.2);
+								border: 1px solid rgba(255, 255, 255, 0.1);
+								border-radius: 8px;
+							"
+						/>
+						<i
+							class="fas fa-icons position-absolute top-50 translate-middle-y ms-3"
+							style="color: #9aaa8a; font-size: 13px"
+						></i>
+					</div>
+					{% if kategori_edit and kategori_edit.icon %}
+					<div class="form-text mt-1" style="font-size: 11px; color: #9aaa8a">
+						<i class="fas fa-info-circle me-1"></i> Preview icon saat ini:
+						<i
+							class="fas {{ kategori_edit.icon }} ms-1"
+							style="color: {{ kategori_edit.warna }}"
+						></i>
+						<strong style="color: #f0ece4">{{ kategori_edit.icon }}</strong>
+					</div>
+					{% endif %}
+				</div>
+
+				<div class="mb-4">
+					<label
+						class="form-label small"
+						style="color: #f0ece4; font-weight: 500; margin-bottom: 6px"
+						>Warna Identitas Peta</label
+					>
+					<div class="d-flex gap-3 align-items-center">
+						<input
+							type="color"
+							name="warna"
+							class="form-control form-control-color"
+							value="{{ kategori_edit.warna if kategori_edit else '#22c55e' }}"
+							style="
+								width: 55px;
+								height: 42px;
+								background: rgba(0, 0, 0, 0.2);
+								border: 1px solid rgba(255, 255, 255, 0.1);
+								border-radius: 8px;
+								cursor: pointer;
+								padding: 4px;
+							"
+						/>
+						<div>
+							<span
+								class="d-block text-white small"
+								style="font-weight: 500; font-size: 13px"
+								>{{ kategori_edit.warna if kategori_edit else '#22c55e' }}</span
+							>
+							<span
+								class="text-muted d-block"
+								style="font-size: 11px; color: #9aaa8a"
+								>Palet penanda titik marker WebGIS</span
+							>
+						</div>
+					</div>
+				</div>
+
+				<div
+					class="d-flex gap-2 pt-2"
+					style="border-top: 1px solid rgba(255, 255, 255, 0.05)"
+				>
+					{% if kategori_edit %}
+					<a
+						href="{{ url_for('admin.kategori_list') }}"
+						class="btn btn-secondary flex-grow-1 d-flex align-items-center justify-content-center"
+						style="
+							font-size: 13px;
+							font-weight: 500;
+							height: 40px;
+							background: rgba(255, 255, 255, 0.05);
+							border: 1px solid rgba(255, 255, 255, 0.1);
+							color: #f0ece4;
+							border-radius: 8px;
+						"
+					>
+						Batal / Kembali
+					</a>
+					{% endif %}
+					<button
+						type="submit"
+						class="btn btn-success {{ 'flex-grow-1' if kategori_edit else 'w-100' }}"
+						style="
+							font-size: 13px;
+							font-weight: 600;
+							background-color: #16a34a;
+							border: none;
+							height: 40px;
+							border-radius: 8px;
+							box-shadow: 0 4px 12px rgba(22, 163, 74, 0.2);
+						"
+					>
+						<i class="fas fa-save me-1"></i> {{ 'Simpan Perubahan' if
+						kategori_edit else 'Tambah Kategori' }}
+					</button>
+				</div>
+			</form>
+		</div>
+	</div>
+
+	{% if not kategori_edit %}
+	<div class="col-lg-8 col-md-7">
+		<div
+			class="bento-card"
+			style="
+				padding: 24px;
+				background: rgba(255, 255, 255, 0.06);
+				backdrop-filter: blur(20px);
+				border: 1px solid rgba(255, 255, 255, 0.1);
+				border-radius: 14px;
+				box-shadow: var(--shadow-md);
+				overflow-x: auto;
+			"
+		>
+			<div class="mb-3">
+				<h6 class="fw-bold mb-1" style="color: #f0ece4">
+					Daftar Kategori Terdaftar
+				</h6>
+				<p
+					class="text-muted small mb-0"
+					style="font-size: 12px; color: #9aaa8a"
+				>
+					Total kelompok infrastruktur spasial
+				</p>
+			</div>
+
+			<table
+				class="table align-middle"
+				style="color: #f0ece4; margin-bottom: 0"
+			>
+				<thead style="border-bottom: 1px solid rgba(255, 255, 255, 0.15)">
+					<tr
+						style="
+							color: #9aaa8a;
+							font-size: 12px;
+							text-transform: uppercase;
+							letter-spacing: 0.5px;
+						"
+					>
+						<th style="padding: 12px 8px">#</th>
+						<th style="padding: 12px 8px">Nama Kategori</th>
+						<th style="padding: 12px 8px">Kode Icon</th>
+						<th style="padding: 12px 8px; text-align: center">Badge Warna</th>
+						<th style="padding: 12px 8px; text-align: center">Total Lokasi</th>
+						<th style="padding: 12px 8px; text-align: center">Aksi</th>
+					</tr>
+				</thead>
+				<tbody style="border: none">
+					{% for k in kategori %}
+					<tr
+						style="
+							border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+							font-size: 13.5px;
+							transition: background 0.2s;
+						"
+						onmouseover="this.style.background = 'rgba(255,255,255,0.02)'"
+						onmouseout="this.style.background = 'transparent'"
+					>
+						<td style="padding: 14px 8px; color: #9aaa8a">{{ loop.index }}</td>
+						<td style="padding: 14px 8px; font-weight: 600; color: #f0ece4">
+							{{ k.nama_kategori }}
+						</td>
+						<td style="padding: 14px 8px">
+							<code
+								style="
+									color: #fda4af;
+									background: rgba(253, 164, 175, 0.08);
+									padding: 3px 8px;
+									border-radius: 6px;
+									font-size: 12px;
+									border: 1px solid rgba(253, 164, 175, 0.15);
+								"
+							>
+								<i
+									class="fas {{ k.icon }} me-1"
+									style="color: {{ k.warna }}"
+								></i
+								>{{ k.icon }}
+							</code>
+						</td>
+						<td style="padding: 14px 8px; text-align: center">
+							<span
+								style="background: {{ k.warna }}; color: #fff; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; box-shadow: 0 2px 8px {{ k.warna }}40; text-transform: uppercase;"
+							>
+								{{ k.warna }}
+							</span>
+						</td>
+						<td
+							style="
+								padding: 14px 8px;
+								text-align: center;
+								color: #9aaa8a;
+								font-weight: 500;
+							"
+						>
+							<span
+								class="badge"
+								style="
+									background: rgba(255, 255, 255, 0.08);
+									color: #f0ece4;
+									padding: 5px 10px;
+									border-radius: 6px;
+								"
+								>{{ k.lokasi|length }} titik</span
+							>
+						</td>
+						<td style="padding: 14px 8px; text-align: center">
+							<div class="d-inline-flex gap-1">
+								<a
+									href="{{ url_for('admin.kategori_edit', id=k.id) }}"
+									class="btn btn-sm d-flex align-items-center justify-content-center"
+									style="
+										width: 32px;
+										height: 32px;
+										background: rgba(212, 168, 67, 0.15);
+										border: 1px solid rgba(212, 168, 67, 0.3);
+										border-radius: 6px;
+										color: #d4a843;
+										transition: all 0.2s;
+									"
+									onmouseover="
+										this.style.background = '#d4a843';
+										this.style.color = '#000';
+									"
+									onmouseout="
+										this.style.background = 'rgba(212, 168, 67, 0.15)';
+										this.style.color = '#d4a843';
+									"
+								>
+									<i class="fas fa-edit" style="font-size: 12px"></i>
+								</a>
+								<form
+									method="POST"
+									action="{{ url_for('admin.kategori_hapus', id=k.id) }}"
+									style="display: inline"
+									onsubmit="return handleHapusKategori(event, '{{ k.nama_kategori }}', {{ k.lokasi|length }});"
+								>
+									<button
+										type="submit"
+										class="btn btn-sm d-flex align-items-center justify-content-center"
+										style="
+											width: 32px;
+											height: 32px;
+											background: rgba(239, 68, 68, 0.15);
+											border: 1px solid rgba(239, 68, 68, 0.3);
+											border-radius: 6px;
+											color: #f87171;
+											transition: all 0.2s;
+										"
+										onmouseover="
+											this.style.background = '#ef4444';
+											this.style.color = '#fff';
+										"
+										onmouseout="
+											this.style.background = 'rgba(239, 68, 68, 0.15)';
+											this.style.color = '#f87171';
+										"
+									>
+										<i class="fas fa-trash-alt" style="font-size: 11px"></i>
+									</button>
+								</form>
+							</div>
+						</td>
+					</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+	</div>
+	{% endif %}
+</div>
+
+<!-- ─── MODAL PERINGATAN: Kategori masih dipakai lokasi ─── -->
+<div
+	id="modalKategoriDipakai"
+	style="
+		display: none;
+		position: fixed;
+		inset: 0;
+		background: rgba(0, 0, 0, 0.6);
+		z-index: 1050;
+		align-items: center;
+		justify-content: center;
+		backdrop-filter: blur(3px);
+	"
+>
+	<div
+		style="
+			background: #1a1f17;
+			border: 1px solid rgba(239, 68, 68, 0.3);
+			border-radius: 14px;
+			padding: 26px;
+			max-width: 420px;
+			width: 90%;
+			box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+			animation: fadeSlideUp 0.25s ease both;
+		"
+	>
+		<div class="d-flex align-items-center gap-2 mb-3">
+			<div
+				style="
+					width: 36px;
+					height: 36px;
+					border-radius: 8px;
+					background: rgba(239, 68, 68, 0.15);
+					display: flex;
+					align-items: center;
+					justify-content: center;
+					flex-shrink: 0;
+				"
+			>
+				<i
+					class="fas fa-triangle-exclamation"
+					style="color: #f87171; font-size: 16px"
+				></i>
+			</div>
+			<h6 class="m-0 fw-bold" style="color: #f0ece4; font-size: 15px">
+				Kategori Masih Digunakan
+			</h6>
+		</div>
+
+		<p
+			id="modalKategoriDipakaiText"
+			style="
+				font-size: 13px;
+				color: #c7c2b8;
+				line-height: 1.6;
+				margin-bottom: 20px;
+			"
+		></p>
+
+		<div class="d-flex gap-2 justify-content-end">
+			<button
+				type="button"
+				onclick="closeModalKategoriDipakai()"
+				class="btn btn-sm"
+				style="
+					font-size: 12.5px;
+					font-weight: 500;
+					height: 38px;
+					padding: 0 16px;
+					background: rgba(255, 255, 255, 0.05);
+					border: 1px solid rgba(255, 255, 255, 0.1);
+					color: #f0ece4;
+					border-radius: 8px;
+				"
+			>
+				Tutup
+			</button>
+			<a
+				href="{{ url_for('admin.lokasi_list') }}"
+				class="btn btn-sm"
+				style="
+					font-size: 12.5px;
+					font-weight: 600;
+					height: 38px;
+					padding: 0 16px;
+					display: flex;
+					align-items: center;
+					background-color: #d4a843;
+					color: #1a1f17;
+					border: none;
+					border-radius: 8px;
+				"
+			>
+				<i class="fas fa-list me-2"></i>Kelola Lokasi
+			</a>
+		</div>
+	</div>
+</div>
+
+<script>
+	function handleHapusKategori(event, namaKategori, jumlahLokasi) {
+		// Jika kategori masih dipakai oleh data lokasi, tampilkan modal
+		// peringatan kustom dan batalkan submit form penghapusan.
+		if (jumlahLokasi > 0) {
+			event.preventDefault();
+			document.getElementById("modalKategoriDipakaiText").innerHTML =
+				`Kategori <strong style="color:#f0ece4">"${namaKategori}"</strong> tidak dapat dihapus karena masih digunakan oleh <strong style="color:#f87171">${jumlahLokasi} data lokasi</strong>. Silakan pindahkan kategori lokasi tersebut atau hapus lokasinya terlebih dahulu melalui menu Kelola Lokasi.`;
+			document.getElementById("modalKategoriDipakai").style.display = "flex";
+			return false;
+		}
+
+		// Jika kategori tidak dipakai, tetap minta konfirmasi sederhana
+		return confirm(
+			`Hapus kategori "${namaKategori}"? Tindakan ini tidak dapat dibatalkan.`,
+		);
+	}
+
+	function closeModalKategoriDipakai() {
+		document.getElementById("modalKategoriDipakai").style.display = "none";
+	}
+
+	// Tutup modal jika user klik area gelap di luar kotak
+	document
+		.getElementById("modalKategoriDipakai")
+		.addEventListener("click", function (e) {
+			if (e.target === this) closeModalKategoriDipakai();
+		});
+</script>
+{% endblock %}

@@ -1,0 +1,386 @@
+{% extends 'admin/base_admin.html' %} {% block title %}Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %} {% block content %}
+<div class="bento-grid">
+	<div class="bento-1 bento-card glow-green">
+		<div
+			class="stat-icon mb-3"
+			style="
+				background: linear-gradient(135deg, #2d5016, #7a9e5a);
+				width: 44px;
+				height: 44px;
+				border-radius: 12px;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				font-size: 18px;
+				color: white;
+			"
+		>
+			<i class="fas fa-map-marker-alt"></i>
+		</div>
+		<div
+			class="stat-number"
+			style="font-size: 32px; font-weight: 700; line-height: 1"
+		>
+			{{ total_lokasi }}
+		</div>
+		<div class="stat-label mt-1">Total Lokasi</div>
+	</div>
+
+	<div class="bento-1 bento-card glow-gold">
+		<div
+			class="stat-icon mb-3"
+			style="
+				background: linear-gradient(135deg, #8b6914, #d4a843);
+				width: 44px;
+				height: 44px;
+				border-radius: 12px;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				font-size: 18px;
+				color: white;
+			"
+		>
+			<i class="fas fa-tags"></i>
+		</div>
+		<div
+			class="stat-number"
+			style="font-size: 32px; font-weight: 700; line-height: 1"
+		>
+			{{ total_kategori }}
+		</div>
+		<div class="stat-label mt-1">Kategori</div>
+	</div>
+
+	<div class="bento-3 bento-card">
+		<p class="bento-section-label">Aksi Cepat</p>
+		<div class="display-aksi-cepat">
+			<a
+				href="{{ url_for('admin.lokasi_tambah') }}"
+				class="btn btn-success btn-aksi"
+			>
+				<i class="fas fa-plus d-block fs-5"></i>Tambah Lokasi
+			</a>
+			<a
+				href="{{ url_for('admin.lokasi_list') }}"
+				class="btn btn-outline-secondary btn-aksi"
+			>
+				<i class="fas fa-list d-block fs-5"></i>Kelola Lokasi
+			</a>
+			<a
+				href="{{ url_for('admin.lokasi_import') }}"
+				class="btn btn-outline-secondary btn-aksi"
+			>
+				<i class="fas fa-file-import d-block fs-5"></i>Import Data
+			</a>
+			<a
+				href="{{ url_for('admin.lokasi_export') }}"
+				class="btn btn-outline-secondary btn-aksi"
+			>
+				<i class="fas fa-file-export d-block fs-5"></i>Export Data
+			</a>
+		</div>
+	</div>
+
+	<div
+		class="bento-card"
+		style="
+			grid-column: span 8;
+			padding: 0;
+			overflow: hidden;
+			align-self: stretch;
+		"
+	>
+		<div style="padding: 14px 20px; border-bottom: 1px solid var(--border)">
+			<p class="bento-section-label mb-0">Pratinjau Peta</p>
+		</div>
+		<div id="minimap" style="height: 250px; width: 100%"></div>
+		<div style="padding: 10px 20px">
+			<a
+				href="{{ url_for('public.peta') }}"
+				target="_blank"
+				class="btn btn-outline-secondary btn-sm"
+			>
+				<i class="fas fa-expand me-1"></i>Buka Peta Penuh →
+			</a>
+		</div>
+	</div>
+
+	<div
+		class="bento-2 bento-card"
+		style="grid-column: span 4; align-self: stretch"
+	>
+		<p class="bento-section-label">Statistik per Kategori</p>
+		{% for k in kategori_stats %}
+		<div class="mb-4">
+			<div class="d-flex justify-content-between mb-1">
+				<div class="d-flex align-items-center gap-2">
+					<div
+						style="width:8px;height:8px;border-radius:50%; background:{{ k.warna }};flex-shrink:0"
+					></div>
+					<span style="font-size: 13px; font-weight: 500"
+						>{{ k.nama_kategori }}</span
+					>
+				</div>
+				<span style="font-size:13px;font-weight:700;color:{{ k.warna }}">
+					{{ k.lokasi|length }}
+				</span>
+			</div>
+			<div
+				style="
+					height: 5px;
+					border-radius: 10px;
+					background: var(--bg);
+					overflow: hidden;
+				"
+			>
+				<div
+					style="height:100%; border-radius:10px; background:{{ k.warna }}; width:{{ [(k.lokasi|length / [total_lokasi,1]|max * 100)|int, 100]|min }}%; transition:width 1s ease 0.3s;"
+				></div>
+			</div>
+		</div>
+		{% endfor %}
+	</div>
+
+	<!-- ─── CARD LOG AKTIVITAS full width ─── -->
+	<div class="bento-card" style="grid-column: span 12">
+		<div class="d-flex justify-content-between align-items-center mb-3">
+			<p class="bento-section-label mb-0">Log Aktivitas</p>
+			<span style="font-size: 11px; color: var(--text-muted)">
+				<i class="fas fa-history me-1"></i>10 aktivitas terakhir
+			</span>
+		</div>
+
+		{% if logs %}
+		<div
+			class="d-flex flex-column gap-2"
+			style="
+				display: grid;
+				grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+				gap: 8px;
+			"
+		>
+			{% for log in logs %} {% set aksi_config = { 'login': {'icon':
+			'fa-sign-in-alt', 'color': '#16a34a', 'bg': '#16a34a22', 'label':
+			'Login'}, 'logout': {'icon': 'fa-sign-out-alt', 'color': '#6b7280', 'bg':
+			'#6b728022', 'label': 'Logout'}, 'tambah': {'icon': 'fa-plus-circle',
+			'color': '#2563eb', 'bg': '#2563eb22', 'label': 'Tambah'}, 'edit':
+			{'icon': 'fa-edit', 'color': '#d97706', 'bg': '#d9770622', 'label':
+			'Edit'}, 'hapus': {'icon': 'fa-trash-alt', 'color': '#dc2626', 'bg':
+			'#dc262622', 'label': 'Hapus'}, 'info': {'icon': 'fa-info-circle',
+			'color': '#0891b2', 'bg': '#0891b222', 'label': 'Info'} } %} {% set cfg =
+			aksi_config.get(log.aksi, {'icon': 'fa-circle', 'color': '#6b7280', 'bg':
+			'#6b728022', 'label': log.aksi|capitalize}) %}
+
+			<div
+				class="d-flex align-items-start gap-3"
+				style="padding: 10px 12px; border-radius: 8px; background: var(--bg)"
+			>
+				<!-- Ikon aksi -->
+				<div
+					style="
+						width: 32px; height: 32px; border-radius: 8px;
+						background: {{ cfg.bg }};
+						display: flex; align-items: center; justify-content: center;
+						flex-shrink: 0; margin-top: 1px;
+					"
+				>
+					<i
+						class="fas {{ cfg.icon }}"
+						style="font-size: 13px; color: {{ cfg.color }}"
+					></i>
+				</div>
+
+				<!-- Deskripsi & timestamp -->
+				<div style="flex: 1; min-width: 0">
+					<div class="d-flex align-items-center gap-2 mb-1">
+						<span
+							class="badge"
+							style="
+								background: {{ cfg.color }}; font-size: 10px;
+								padding: 2px 7px; border-radius: 4px; text-transform: uppercase;
+								letter-spacing: 0.4px;
+							"
+							>{{ cfg.label }}</span
+						>
+						{% if log.admin_rel %}
+						<span style="font-size: 11px; color: var(--text-muted)">
+							oleh
+							<strong style="color: var(--text-main)"
+								>{{ log.admin_rel.username }}</strong
+							>
+						</span>
+						{% endif %}
+					</div>
+					<div
+						style="
+							font-size: 12px;
+							color: var(--text-main);
+							white-space: nowrap;
+							overflow: hidden;
+							text-overflow: ellipsis;
+						"
+					>
+						{{ log.deskripsi | capitalize }}
+					</div>
+				</div>
+
+				<!-- Waktu -->
+				<div style="flex-shrink: 0; text-align: right">
+					<div style="font-size: 10px; color: var(--text-muted)">
+						{{ log.created_at.strftime('%d/%m/%Y') if log.created_at else '-' }}
+					</div>
+					<div style="font-size: 10px; color: var(--text-muted)">
+						{{ log.created_at.strftime('%H:%M') if log.created_at else '' }}
+					</div>
+				</div>
+			</div>
+			{% endfor %}
+		</div>
+		{% else %}
+		<div
+			class="text-center py-4"
+			style="color: var(--text-muted); font-size: 12px"
+		>
+			<i
+				class="fas fa-history mb-2"
+				style="font-size: 22px; display: block; opacity: 0.4"
+			></i>
+			Belum ada aktivitas yang tercatat.
+		</div>
+		{% endif %}
+	</div>
+
+	<!-- ─── CARD LOKASI TERBARU horizontal full width ─── -->
+	<div class="bento-card" style="grid-column: span 12">
+		<div class="d-flex justify-content-between align-items-center mb-3">
+			<p class="bento-section-label mb-0">Lokasi Terbaru</p>
+			<span style="font-size: 11px; color: var(--text-muted)">
+				<i class="fas fa-map-marker-alt me-1"></i>5 lokasi terakhir ditambahkan
+			</span>
+		</div>
+
+		{% if lokasi_terbaru %}
+		<div
+			style="
+				display: grid;
+				grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+				gap: 10px;
+			"
+		>
+			{% for l in lokasi_terbaru %}
+			<div
+				style="
+					padding: 12px;
+					border-radius: 10px;
+					background: var(--bg);
+					display: flex;
+					flex-direction: column;
+					gap: 8px;
+				"
+			>
+				<!-- Header: ikon + nama -->
+				<div class="d-flex align-items-center gap-2">
+					<div
+						style="width:32px; height:32px; border-radius:8px; background:{{ l.kategori.warna if l.kategori else '#6b7280' }}22; display:flex; align-items:center; justify-content:center; flex-shrink:0;"
+					>
+						<i
+							class="fas {{ l.kategori.icon if (l.kategori and l.kategori.icon) else 'fa-map-pin' }}"
+							style="font-size:13px; color:{{ l.kategori.warna if l.kategori else '#6b7280' }}"
+						></i>
+					</div>
+					<div style="min-width: 0; flex: 1">
+						<div
+							style="
+								font-size: 12px;
+								font-weight: 600;
+								color: var(--text-main);
+								white-space: nowrap;
+								overflow: hidden;
+								text-overflow: ellipsis;
+							"
+						>
+							{{ l.nama }}
+						</div>
+						<div
+							style="
+								font-size: 10px;
+								color: var(--text-muted);
+								white-space: nowrap;
+								overflow: hidden;
+								text-overflow: ellipsis;
+							"
+						>
+							{{ l.alamat or 'Alamat belum diisi' }}
+						</div>
+					</div>
+				</div>
+				<!-- Footer: badge kategori + tombol edit -->
+				<div
+					class="d-flex align-items-center justify-content-between"
+					style="margin-top: auto"
+				>
+					<span
+						class="badge"
+						style="background:{{ l.kategori.warna if l.kategori else '#6b7280' }}; font-size: 10px; padding: 2px 7px;"
+					>
+						{{ l.kategori.nama_kategori if l.kategori else 'Tanpa Kategori' }}
+					</span>
+					<a
+						href="{{ url_for('admin.lokasi_edit', id=l.id) }}"
+						class="btn btn-warning btn-sm py-1 px-2"
+						style="font-size: 10px"
+					>
+						<i class="fas fa-edit"></i>
+					</a>
+				</div>
+			</div>
+			{% endfor %}
+		</div>
+		{% else %}
+		<div
+			class="text-center py-4"
+			style="color: var(--text-muted); font-size: 12px"
+		>
+			<i class="fas fa-inbox mb-1" style="font-size: 20px; display: block"></i>
+			Belum ada data lokasi terbaru.
+		</div>
+		{% endif %}
+	</div>
+</div>
+
+<link
+	rel="stylesheet"
+	href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+	const minimap = L.map("minimap", {
+		zoomControl: true,
+		dragging: true,
+		scrollWheelZoom: true,
+		doubleClickZoom: true,
+	}).setView([3.3509591130538046, 117.5428043625047], 14);
+
+	L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(
+		minimap,
+	);
+
+	fetch("/api/lokasi")
+		.then((r) => r.json())
+		.then((data) => {
+			data.forEach((l) => {
+				if (l.latitude && l.longitude) {
+					L.circleMarker([l.latitude, l.longitude], {
+						radius: 5,
+						fillColor: l.warna || "#6b7280",
+						color: "white",
+						weight: 1.5,
+						fillOpacity: 1,
+					}).addTo(minimap);
+				}
+			});
+		});
+</script>
+{% endblock %}

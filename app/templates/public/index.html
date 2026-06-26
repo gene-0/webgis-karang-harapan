@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="id">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>UMKM Karang Harapan — Usaha Lokal, Kebanggaan Bersama</title>
+
+		<link
+			href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+			rel="stylesheet"
+		/>
+		<link
+			href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+			rel="stylesheet"
+		/>
+		<link
+			href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
+			rel="stylesheet"
+		/>
+
+		<style>
+			:root {
+				--bg-dark: #0f1a0a;
+				--text-light: #f0ece4;
+				--text-muted: #9aaa8a;
+				--accent-green: #22c55e;
+				--accent-gold: #d4a843;
+			}
+
+			body {
+				background-color: var(--bg-dark);
+				color: var(--text-light);
+				font-family: "Plus Jakarta Sans", sans-serif;
+				overflow-x: hidden;
+			}
+
+			/* Hero Section Premium dengan Efek Mesh Gradient */
+			.hero {
+				position: relative;
+				background-color: #0b1207;
+				background-image:
+					radial-gradient(
+						at 0% 0%,
+						rgba(34, 197, 94, 0.12) 0px,
+						transparent 50%
+					),
+					radial-gradient(
+						at 100% 100%,
+						rgba(212, 168, 67, 0.08) 0px,
+						transparent 50%
+					);
+				padding: 100px 0 110px 0;
+				border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+			}
+
+			.hero::before {
+				content: "";
+				position: absolute;
+				top: 0;
+				left: 0;
+				right: 0;
+				bottom: 0;
+				background: linear-gradient(rgba(15, 26, 10, 0) 60%, var(--bg-dark));
+				pointer-events: none;
+			}
+
+			/* Glassmorphism Bento Card Premium dengan Isolasi Efek */
+			.stat-card {
+				background: rgba(255, 255, 255, 0.04) !important;
+				backdrop-filter: blur(20px);
+				-webkit-backdrop-filter: blur(20px);
+				border: 1px solid rgba(255, 255, 255, 0.08) !important;
+				border-radius: 16px !important;
+				transition:
+					transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+					border-color 0.3s ease,
+					box-shadow 0.3s ease;
+				position: relative;
+				overflow: hidden;
+				isolation: isolate;
+				box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+			}
+
+			.stat-card:hover {
+				transform: translateY(-6px);
+				border-color: rgba(34, 197, 94, 0.3) !important;
+				box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
+				z-index: 2;
+			}
+
+			/* Ukuran Ikon untuk Baris Padat */
+			.stat-icon {
+				width: 50px;
+				height: 50px;
+				border-radius: 12px;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				font-size: 18px;
+				color: #ffffff;
+				box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+				transition: transform 0.3s ease;
+			}
+
+			.stat-card:hover .stat-icon {
+				transform: scale(1.1) rotate(5deg);
+			}
+
+			/* Custom Grid untuk Layar Besar Desktop (5 Kolom Sejajar 20% Width) */
+			@media (min-width: 1200px) {
+				.col-bento-5 {
+					flex: 0 0 20%;
+					max-width: 20%;
+				}
+			}
+
+			/* Animasi Masuk */
+			@keyframes fadeInUp {
+				from {
+					opacity: 0;
+					transform: translateY(30px);
+				}
+				to {
+					opacity: 1;
+					transform: translateY(0);
+				}
+			}
+
+			.animated-hero {
+				animation: fadeInUp 0.6s ease both;
+			}
+
+			@keyframes pulse {
+				0% {
+					transform: scale(0.95);
+					box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.5);
+				}
+				70% {
+					transform: scale(1);
+					box-shadow: 0 0 0 6px rgba(34, 197, 94, 0);
+				}
+				100% {
+					transform: scale(0.95);
+					box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
+				}
+			}
+		</style>
+	</head>
+	<body>
+		<div class="hero d-flex align-items-center">
+			<div class="container text-center position-relative z-1 animated-hero">
+				<div
+					class="d-inline-flex align-items-center gap-2 mb-3"
+					style="
+						background: rgba(34, 197, 94, 0.1);
+						border: 1px solid rgba(34, 197, 94, 0.2);
+						padding: 6px 16px;
+						border-radius: 30px;
+					"
+				>
+					<span
+						style="
+							width: 7px;
+							height: 7px;
+							background: var(--accent-green);
+							border-radius: 50%;
+							display: inline-block;
+							animation: pulse 2s infinite;
+						"
+					></span>
+					<span
+						style="
+							font-size: 11.5px;
+							font-weight: 600;
+							color: #4ade80;
+							letter-spacing: 0.5px;
+							text-transform: uppercase;
+						"
+						>Bangga Produk Lokal</span
+					>
+				</div>
+
+				<h1
+					class="display-4 text-white mb-3"
+					style="letter-spacing: -1.5px; font-weight: 800"
+				>
+					Usaha Lokal, <br />
+					<span
+						style="
+							background: linear-gradient(135deg, #facc15 0%, #4ade80 100%);
+							-webkit-background-clip: text;
+							-webkit-text-fill-color: transparent;
+						"
+						>Kebanggaan Karang Harapan</span
+					>
+				</h1>
+
+				<p
+					class="lead mx-auto mb-4"
+					style="
+						max-width: 620px;
+						color: var(--text-muted);
+						font-size: 16px;
+						line-height: 1.6;
+					"
+				>
+					Dukung pertumbuhan ekonomi warga — temukan dan kenali pelaku UMKM di
+					Kelurahan Karang Harapan dalam satu peta interaktif.
+				</p>
+
+				<div class="d-flex justify-content-center">
+					<a
+						href="{{ url_for('public.peta') }}"
+						class="btn btn-success px-5 py-3 d-inline-flex align-items-center gap-3"
+						style="
+							font-size: 16px;
+							font-weight: 700;
+							background: #16a34a;
+							border: none;
+							border-radius: 12px;
+							box-shadow: 0 6px 24px rgba(22, 163, 74, 0.35);
+							transition: all 0.2s;
+						"
+					>
+						<i class="fas fa-store" style="font-size: 18px"></i>
+						Kenali UMKM Kami
+					</a>
+				</div>
+			</div>
+		</div>
+
+		<div class="container my-5" style="animation: fadeInUp 0.8s ease 0.2s both">
+			<div class="text-center mb-5">
+				<h4
+					class="fw-bold mb-1"
+					style="color: var(--text-light); letter-spacing: -0.5px"
+				>
+					Sebaran UMKM Karang Harapan
+				</h4>
+				<p style="font-size: 13px; color: var(--text-muted)">
+					Jumlah pelaku usaha yang telah terdaftar per kategori
+				</p>
+			</div>
+
+			<div class="row g-3 justify-content-center">
+				<div class="col-bento-5 col-lg-4 col-sm-6">
+					<div
+						class="card stat-card text-center p-3 h-100 d-flex flex-column justify-content-between"
+					>
+						<div
+							class="d-flex flex-column align-items-center justify-content-center flex-grow-1 py-2"
+						>
+							<div
+								class="stat-icon mb-2"
+								style="
+									background: rgba(255, 255, 255, 0.08);
+									border: 1px solid rgba(255, 255, 255, 0.15);
+								"
+							>
+								<i class="fas fa-layer-group" style="color: #f0ece4"></i>
+							</div>
+							<h2
+								class="fw-bold mb-0"
+								style="
+									color: var(--text-light);
+									font-size: 30px;
+									letter-spacing: -1px;
+								"
+							>
+								{{ total_lokasi }}
+							</h2>
+						</div>
+						<div
+							class="mt-2 pt-2"
+							style="border-top: 1px solid rgba(255, 255, 255, 0.05)"
+						>
+							<p
+								class="mb-0 small text-uppercase tracking-wider"
+								style="
+									color: var(--text-muted);
+									font-weight: 600;
+									font-size: 10.5px;
+									letter-spacing: 0.5px;
+								"
+							>
+								Total UMKM
+							</p>
+						</div>
+					</div>
+				</div>
+
+				{% for k in kategori %}
+				<div class="col-bento-5 col-lg-4 col-sm-6">
+					<div
+						class="card stat-card text-center p-3 h-100 d-flex flex-column justify-content-between"
+					>
+						<div
+							class="d-flex flex-column align-items-center justify-content-center flex-grow-1 py-2"
+						>
+							<div
+								class="stat-icon mb-2"
+								style="background: {{ k.warna }}20; border: 1px solid {{ k.warna }}40;"
+							>
+								<i class="fas {{ k.icon }}" style="color: {{ k.warna }};"></i>
+							</div>
+							<h2
+								class="fw-bold mb-0"
+								style="
+									color: var(--text-light);
+									font-size: 30px;
+									letter-spacing: -1px;
+								"
+							>
+								{{ k.lokasi|length }}
+							</h2>
+						</div>
+						<div
+							class="mt-2 pt-2"
+							style="
+								border-top: 1px solid rgba(255, 255, 255, 0.05);
+								min-height: 40px;
+								display: flex;
+								align-items: center;
+								justify-content: center;
+							"
+						>
+							<p
+								class="mb-0 small"
+								style="
+									color: #f0ece4;
+									font-weight: 600;
+									opacity: 0.9;
+									line-height: 1.2;
+									font-size: 12px;
+								"
+							>
+								{{ k.nama_kategori }}
+							</p>
+						</div>
+					</div>
+				</div>
+				{% endfor %}
+			</div>
+		</div>
+
+		<footer
+			class="text-center py-4 mt-5"
+			style="
+				border-top: 1px solid rgba(255, 255, 255, 0.04);
+				font-size: 12px;
+				color: var(--text-muted);
+			"
+		>
+			&copy; 2026 UMKM Kelurahan Karang Harapan. All Rights Reserved.
+		</footer>
+	</body>
+</html>

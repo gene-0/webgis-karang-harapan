@@ -1,0 +1,380 @@
+{% extends 'admin/base_admin.html' %} {% block title %}{{ 'Edit' if lokasi else
+'Tambah' }} Lokasi{% endblock %} {% block page_title %}{{ 'Edit' if lokasi else
+'Tambah' }} Lokasi{% endblock %} {% block content %}
+<div class="row g-4" style="animation: fadeSlideUp 0.4s ease both">
+	<div class="col-lg-9 col-xl-8 mx-auto">
+		<div
+			class="bento-card"
+			style="
+				padding: 28px;
+				background: rgba(255, 255, 255, 0.06);
+				backdrop-filter: blur(20px);
+				border: 1px solid rgba(255, 255, 255, 0.1);
+				border-radius: 14px;
+				box-shadow: var(--shadow-md);
+			"
+		>
+			<div
+				class="mb-4 pb-2"
+				style="border-bottom: 1px solid rgba(255, 255, 255, 0.1)"
+			>
+				<div class="d-flex align-items-center gap-2 mb-1">
+					<div
+						style="
+							width: 28px;
+							height: 28px;
+							border-radius: 6px;
+							background: rgba(212, 168, 67, 0.15);
+							display: flex;
+							align-items: center;
+							justify-content: center;
+						"
+					>
+						<i
+							class="fas fa-map-location-dot"
+							style="color: #d4a843; font-size: 14px"
+						></i>
+					</div>
+					<h5 class="m-0 fw-bold" style="color: #f0ece4; font-size: 16px">
+						Formulir Data Lokasi Potensi
+					</h5>
+				</div>
+				<p class="text-muted m-0" style="font-size: 12px; padding-left: 36px">
+					Silakan isi informasi koordinat objek dan detail foto penunjang secara
+					akurat.
+				</p>
+			</div>
+
+			<form
+				action="{{ url_for('admin.lokasi_edit', id=lokasi.id) if lokasi else url_for('admin.lokasi_add') }}"
+				method="POST"
+				enctype="multipart/form-data"
+			>
+				<div class="mb-3">
+					<label
+						for="nama"
+						class="form-label"
+						style="font-size: 13px; font-weight: 500; color: #f0ece4"
+						>Nama Lokasi / Tempat</label
+					>
+					<input
+						type="text"
+						class="form-control"
+						id="nama"
+						name="nama"
+						value="{{ lokasi.nama if lokasi else '' }}"
+						required
+						style="
+							background: rgba(255, 255, 255, 0.05);
+							border: 1px solid rgba(255, 255, 255, 0.1);
+							color: #f0ece4;
+							border-radius: 8px;
+							font-size: 13.5px;
+							padding: 10px;
+						"
+						placeholder="Contoh: Toko Keripik Kelapa Makmur"
+					/>
+				</div>
+
+				<div class="row">
+					<div class="col-md-6 mb-3">
+						<label
+							for="latitude"
+							class="form-label"
+							style="font-size: 13px; font-weight: 500; color: #f0ece4"
+							>Garis Lintang (Latitude)</label
+						>
+						<input
+							type="number"
+							step="any"
+							class="form-control"
+							id="latitude"
+							name="latitude"
+							value="{{ lokasi.latitude if lokasi else '' }}"
+							required
+							style="
+								background: rgba(255, 255, 255, 0.05);
+								border: 1px solid rgba(255, 255, 255, 0.1);
+								color: #f0ece4;
+								border-radius: 8px;
+								font-size: 13.5px;
+								padding: 10px;
+							"
+							placeholder="Contoh: 3.350959"
+						/>
+					</div>
+					<div class="col-md-6 mb-3">
+						<label
+							for="longitude"
+							class="form-label"
+							style="font-size: 13px; font-weight: 500; color: #f0ece4"
+							>Garis Bujur (Longitude)</label
+						>
+						<input
+							type="number"
+							step="any"
+							class="form-control"
+							id="longitude"
+							name="longitude"
+							value="{{ lokasi.longitude if lokasi else '' }}"
+							required
+							style="
+								background: rgba(255, 255, 255, 0.05);
+								border: 1px solid rgba(255, 255, 255, 0.1);
+								color: #f0ece4;
+								border-radius: 8px;
+								font-size: 13.5px;
+								padding: 10px;
+							"
+							placeholder="Contoh: 117.542804"
+						/>
+					</div>
+				</div>
+
+				<div class="mb-3">
+					<label
+						for="kategori_id"
+						class="form-label"
+						style="font-size: 13px; font-weight: 500; color: #f0ece4"
+						>Kategori Objek Lapisan</label
+					>
+					<select
+						class="form-select"
+						id="kategori_id"
+						name="kategori_id"
+						required
+						style="
+							background: #212529;
+							border: 1px solid rgba(255, 255, 255, 0.1);
+							color: #f0ece4;
+							border-radius: 8px;
+							font-size: 13.5px;
+							padding: 10px;
+						"
+					>
+						<option value="" disabled selected style="color: #888">
+							-- Pilih Kategori Peta --
+						</option>
+						{% for k in kategori %}
+						<option
+							value="{{ k.id }}"
+							{%
+							if
+							lokasi
+							and
+							lokasi.kategori_id=""
+							="k.id"
+							%}selected{%
+							endif
+							%}
+						>
+							{{ k.nama_kategori }}
+						</option>
+						{% endfor %}
+					</select>
+				</div>
+
+				<div class="mb-3">
+					<label
+						for="alamat"
+						class="form-label"
+						style="font-size: 13px; font-weight: 500; color: #f0ece4"
+						>Alamat Lengkap</label
+					>
+					<textarea
+						class="form-control"
+						id="alamat"
+						name="alamat"
+						rows="2"
+						style="
+							background: rgba(255, 255, 255, 0.05);
+							border: 1px solid rgba(255, 255, 255, 0.1);
+							color: #f0ece4;
+							border-radius: 8px;
+							font-size: 13.5px;
+							padding: 10px;
+						"
+						placeholder="Jalan Raya RT.05 No.12, Karang Harapan..."
+					>
+{{ lokasi.alamat if lokasi else '' }}</textarea
+					>
+				</div>
+
+				<div class="mb-3">
+					<label
+						for="kontak"
+						class="form-label"
+						style="font-size: 13px; font-weight: 500; color: #f0ece4"
+						>Nomor WhatsApp / Kontak (Opsional)</label
+					>
+					<input
+						type="text"
+						class="form-control"
+						id="kontak"
+						name="kontak"
+						value="{{ lokasi.kontak if lokasi else '' }}"
+						style="
+							background: rgba(255, 255, 255, 0.05);
+							border: 1px solid rgba(255, 255, 255, 0.1);
+							color: #f0ece4;
+							border-radius: 8px;
+							font-size: 13.5px;
+							padding: 10px;
+						"
+						placeholder="Contoh: 08123456789"
+					/>
+				</div>
+
+				<div class="mb-3">
+					<label
+						for="deskripsi"
+						class="form-label"
+						style="font-size: 13px; font-weight: 500; color: #f0ece4"
+						>Deskripsi Potensi Ringkas</label
+					>
+					<textarea
+						class="form-control"
+						id="deskripsi"
+						name="deskripsi"
+						rows="3"
+						style="
+							background: rgba(255, 255, 255, 0.05);
+							border: 1px solid rgba(255, 255, 255, 0.1);
+							color: #f0ece4;
+							border-radius: 8px;
+							font-size: 13.5px;
+							padding: 10px;
+						"
+						placeholder="Tuliskan ulasan ringkas mengenai produk, jam operasional, atau keunggulan komparatif tempat ini..."
+					>
+{{ lokasi.deskripsi if lokasi else '' }}</textarea
+					>
+				</div>
+
+				<div class="mb-4">
+					<label
+						class="form-label"
+						style="font-size: 13px; font-weight: 500; color: #f0ece4"
+						>Dokumentasi Foto Objek (Bisa Pilih > 1 Foto)</label
+					>
+					<div class="position-relative">
+						<input
+							type="file"
+							class="position-absolute top-0 start-0 opacity-0 w-100 h-100"
+							id="foto"
+							name="foto"
+							accept="image/*"
+							multiple
+							onchange="updateImageName(this)"
+							style="cursor: pointer; z-index: 5"
+						/>
+						<div
+							class="d-flex align-items-center justify-content-between px-3"
+							id="imageFakeInput"
+							style="
+								background: rgba(255, 255, 255, 0.05);
+								border: 1px dashed rgba(255, 255, 255, 0.25);
+								color: #b5b0a7;
+								border-radius: 8px;
+								height: 44px;
+								font-size: 13px;
+								transition: all 0.2s ease;
+							"
+						>
+							<span
+								id="imageNameLabel"
+								class="text-truncate"
+								style="max-width: 80%"
+							>
+								{% if lokasi and lokasi.foto %} {{ lokasi.foto }} (Foto saat
+								ini) {% else %}
+								<i class="fas fa-images me-2 text-muted"></i>Pilih satu atau
+								beberapa foto sekaligus... {% endif %}
+							</span>
+							<span
+								class="badge"
+								style="
+									background-color: rgba(212, 168, 67, 0.2);
+									color: #d4a843;
+									border: 1px solid rgba(212, 168, 67, 0.3);
+									padding: 5px 10px;
+									font-weight: 500;
+									border-radius: 6px;
+								"
+								>Cari File</span
+							>
+						</div>
+					</div>
+					<small class="text-muted d-block mt-1" style="font-size: 11px"
+						>*Tips: Tahan tombol <b>Ctrl</b> (Windows) atau <b>Command</b> (Mac)
+						saat mengklik foto untuk memilih banyak gambar.</small
+					>
+				</div>
+
+				<div
+					class="d-flex justify-content-end gap-2 mt-4 pt-2"
+					style="border-top: 1px solid rgba(255, 255, 255, 0.08)"
+				>
+					<a
+						href="{{ url_for('admin.lokasi_list') }}"
+						class="btn btn-secondary px-4 d-flex align-items-center"
+						style="
+							font-size: 13px;
+							font-weight: 500;
+							height: 40px;
+							background: rgba(255, 255, 255, 0.05);
+							border: 1px solid rgba(255, 255, 255, 0.1);
+							color: #f0ece4;
+							border-radius: 8px;
+						"
+					>
+						Batal
+					</a>
+					<button
+						type="submit"
+						class="btn btn-success px-4"
+						style="
+							font-size: 13px;
+							font-weight: 600;
+							background-color: #16a34a;
+							border: none;
+							height: 40px;
+							border-radius: 8px;
+							box-shadow: 0 4px 12px rgba(22, 163, 74, 0.2);
+						"
+					>
+						<i class="fas fa-save me-2"></i>{{ 'Simpan Perubahan' if lokasi else
+						'Simpan Lokasi Baru' }}
+					</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+<script>
+	// Fungsi adaptif untuk memantau & menampilkan jumlah berkas foto terpilih
+	function updateImageName(input) {
+		const label = document.getElementById("imageNameLabel");
+		const fakeInput = document.getElementById("imageFakeInput");
+
+		if (input.files && input.files.length > 0) {
+			if (input.files.length === 1) {
+				label.textContent = input.files[0].name;
+			} else {
+				label.textContent =
+					"🔥 " + input.files.length + " file foto siap diunggah";
+			}
+			label.style.color = "#f0ece4";
+			fakeInput.style.borderColor = "#16a34a";
+			fakeInput.style.background = "rgba(22, 163, 74, 0.05)";
+		} else {
+			label.innerHTML =
+				'<i class="fas fa-images me-2 text-muted"></i>Pilih satu atau beberapa foto sekaligus...';
+			label.style.color = "#b5b0a7";
+			fakeInput.style.borderColor = "rgba(255, 255, 255, 0.25)";
+			fakeInput.style.background = "rgba(255, 255, 255, 0.05)";
+		}
+	}
+</script>
+{% endblock %}

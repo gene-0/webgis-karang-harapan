@@ -1,0 +1,969 @@
+<!doctype html>
+<html lang="id">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Peta UMKM - Karang Harapan</title>
+
+		<link
+			href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+			rel="stylesheet"
+		/>
+		<link
+			href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+			rel="stylesheet"
+		/>
+		<link
+			href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
+			rel="stylesheet"
+		/>
+
+		<link
+			rel="stylesheet"
+			href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+		/>
+
+		<style>
+			body {
+				margin: 0;
+				padding: 0;
+				background-color: #f8f9fa;
+				font-family: "Plus Jakarta Sans", sans-serif;
+				overflow: hidden;
+			}
+
+			#map {
+				height: calc(100vh - 65px);
+				width: 100%;
+				background-color: #e9ecef;
+			}
+
+			/* ─── NAVBAR ATAS ─── */
+			.navbar {
+				height: 65px;
+				background-color: #1a6b3c !important;
+				box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+				z-index: 1010;
+			}
+
+			.navbar-brand {
+				font-weight: 700;
+				letter-spacing: -0.5px;
+				font-size: 16px;
+			}
+
+			/* ══════════════════════════════════════
+			   PANEL FILTER — DESKTOP (kanan atas)
+			   ══════════════════════════════════════ */
+			.filter-panel {
+				position: absolute;
+				top: 80px;
+				right: 15px;
+				z-index: 1000;
+				width: 300px;
+				max-height: calc(100vh - 120px);
+				overflow-y: auto;
+				background: rgba(255, 255, 255, 0.97) !important;
+				backdrop-filter: blur(16px);
+				-webkit-backdrop-filter: blur(16px);
+				border: 1px solid rgba(0, 0, 0, 0.08) !important;
+				border-radius: 18px !important;
+				padding: 0 !important;
+				box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12) !important;
+				color: #212529;
+				transition:
+					transform 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+					opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+			}
+			.filter-panel.minimized {
+				transform: translateX(340px);
+				opacity: 0;
+				pointer-events: none;
+			}
+
+			/* Panel header */
+			.panel-header {
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+				padding: 14px 16px 12px;
+				border-bottom: 1px solid #f0f0f0;
+				background: linear-gradient(135deg, #f6fdf9, #fff);
+				border-radius: 18px 18px 0 0;
+			}
+			.panel-header-left {
+				display: flex;
+				align-items: center;
+				gap: 9px;
+			}
+			.panel-header-left .ph-icon {
+				width: 32px;
+				height: 32px;
+				background: linear-gradient(135deg, #1a6b3c, #2d9e5f);
+				border-radius: 9px;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				box-shadow: 0 2px 6px rgba(26, 107, 60, 0.25);
+			}
+			.panel-header-left .ph-icon i {
+				color: #fff;
+				font-size: 13px;
+			}
+			.panel-header-left h6 {
+				margin: 0;
+				font-size: 14px;
+				font-weight: 700;
+				color: #0f2d1a;
+				letter-spacing: -0.2px;
+			}
+
+			/* Tombol sembunyikan */
+			.close-panel-btn {
+				display: flex;
+				align-items: center;
+				gap: 5px;
+				padding: 6px 11px 6px 9px;
+				background: #f1f5f2;
+				border: 1.5px solid #d1e8d8;
+				border-radius: 10px;
+				color: #3a7d55;
+				font-size: 11px;
+				font-weight: 700;
+				cursor: pointer;
+				text-decoration: none;
+				transition: all 0.18s ease;
+				min-height: 34px;
+				-webkit-tap-highlight-color: transparent;
+			}
+			.close-panel-btn:hover {
+				background: #e2f0e8;
+				border-color: #1a6b3c;
+				color: #1a6b3c;
+			}
+
+			/* Panel body */
+			.panel-body {
+				padding: 14px 16px 16px;
+			}
+
+			/* Tombol FAB buka panel — desktop */
+			.toggle-filter-btn {
+				position: absolute;
+				top: 80px;
+				right: 15px;
+				z-index: 999;
+				width: 46px;
+				height: 46px;
+				background: linear-gradient(135deg, #1a6b3c, #2d9e5f);
+				border: none;
+				border-radius: 14px;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				box-shadow: 0 4px 16px rgba(26, 107, 60, 0.35);
+				cursor: pointer;
+				color: #fff;
+				transition: all 0.2s ease;
+				-webkit-tap-highlight-color: transparent;
+			}
+			.toggle-filter-btn:hover {
+				transform: scale(1.07);
+			}
+			.toggle-filter-btn i {
+				font-size: 15px;
+			}
+
+			/* ══════════════════════════════════════
+			   BOTTOM SHEET — MOBILE (≤ 600px)
+			   ══════════════════════════════════════ */
+			@media (max-width: 600px) {
+				/* Panel jadi bottom sheet */
+				.filter-panel {
+					position: fixed !important;
+					top: auto !important;
+					bottom: 0 !important;
+					left: 0 !important;
+					right: 0 !important;
+					width: 100% !important;
+					max-width: 100% !important;
+					max-height: 82vh;
+					border-radius: 22px 22px 0 0 !important;
+					border-bottom: none !important;
+					transform: translateY(0) !important;
+					transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+					z-index: 1100 !important;
+					overflow-y: auto;
+					padding-bottom: env(safe-area-inset-bottom, 12px) !important;
+				}
+				.filter-panel.minimized {
+					transform: translateY(110%) !important;
+					opacity: 1 !important;
+				}
+				.panel-header {
+					border-radius: 22px 22px 0 0;
+				}
+
+				/* Drag handle di atas bottom sheet */
+				.panel-header::before {
+					content: "";
+					display: block;
+					width: 40px;
+					height: 4px;
+					background: #d0d5d2;
+					border-radius: 2px;
+					margin: 0 auto 12px;
+				}
+				.panel-header {
+					flex-direction: column;
+					align-items: stretch;
+					gap: 0;
+					padding-top: 8px;
+				}
+				.panel-header-row {
+					display: flex;
+					align-items: center;
+					justify-content: space-between;
+				}
+
+				/* Overlay gelap di belakang bottom sheet */
+				.bs-overlay {
+					display: block !important;
+					pointer-events: none;
+				}
+				.bs-overlay.active {
+					pointer-events: auto;
+				}
+
+				/* FAB buka panel — pojok kanan bawah di mobile */
+				.toggle-filter-btn {
+					position: fixed !important;
+					top: auto !important;
+					bottom: 24px !important;
+					right: 16px !important;
+					width: 52px !important;
+					height: 52px !important;
+					border-radius: 16px !important;
+					z-index: 1050 !important;
+					box-shadow: 0 6px 20px rgba(26, 107, 60, 0.4) !important;
+				}
+				.toggle-filter-btn i {
+					font-size: 18px !important;
+				}
+			}
+
+			/* Overlay gelap (hanya aktif di mobile) */
+			.bs-overlay {
+				display: none;
+				position: fixed;
+				inset: 0;
+				background: rgba(0, 0, 0, 0.45);
+				z-index: 1099;
+				opacity: 0;
+				pointer-events: none;
+				transition: opacity 0.3s ease;
+				-webkit-tap-highlight-color: transparent;
+			}
+			.bs-overlay.active {
+				opacity: 1;
+				pointer-events: auto;
+			}
+
+			/* ══════════════════════════════════════
+			   ELEMEN DALAM PANEL (shared)
+			   ══════════════════════════════════════ */
+			.search-wrapper {
+				position: relative;
+			}
+			.search-wrapper i {
+				position: absolute;
+				left: 12px;
+				top: 50%;
+				transform: translateY(-50%);
+				color: #6c757d;
+				font-size: 13px;
+			}
+
+			.form-control-light {
+				background: #f8faf9 !important;
+				border: 1.5px solid #d4e8db !important;
+				border-radius: 12px !important;
+				color: #212529 !important;
+				padding-left: 36px !important;
+				font-size: 13px;
+				height: 44px;
+				transition:
+					border-color 0.2s,
+					box-shadow 0.2s;
+			}
+			.form-control-light:focus {
+				border-color: #1a6b3c !important;
+				box-shadow: 0 0 0 3px rgba(26, 107, 60, 0.12) !important;
+				background: #fff !important;
+			}
+
+			.filter-item {
+				background: #f8faf9;
+				border: 1.5px solid #e8f2eb;
+				border-radius: 12px;
+				padding: 10px 12px;
+				margin-bottom: 8px;
+				display: flex;
+				align-items: center;
+				transition: all 0.15s ease;
+				cursor: pointer;
+				-webkit-tap-highlight-color: transparent;
+			}
+			.filter-item:active {
+				background: #e8f5ed;
+				transform: scale(0.98);
+			}
+
+			.form-check-input {
+				cursor: pointer;
+				width: 18px;
+				height: 18px;
+				margin-top: 0;
+				flex-shrink: 0;
+				border: 2px solid #b0c8ba;
+				border-radius: 5px !important;
+				accent-color: #1a6b3c;
+			}
+			.form-check-input:checked {
+				background-color: #1a6b3c;
+				border-color: #1a6b3c;
+			}
+
+			.form-check-label {
+				cursor: pointer;
+				font-size: 13px;
+				font-weight: 600;
+				color: #1e3a2a;
+				display: flex;
+				align-items: center;
+				width: 100%;
+			}
+
+			.cat-icon-badge {
+				width: 32px;
+				height: 32px;
+				border-radius: 9px;
+				display: inline-flex;
+				align-items: center;
+				justify-content: center;
+				margin-right: 10px;
+				font-size: 13px;
+				color: #fff;
+				flex-shrink: 0;
+				box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+			}
+
+			.cat-count-badge {
+				margin-left: auto;
+				background: #e2eee7;
+				color: #3a7d55;
+				font-size: 11px;
+				font-weight: 700;
+				padding: 2px 8px;
+				border-radius: 20px;
+				min-width: 26px;
+				text-align: center;
+			}
+
+			.panel-section-title {
+				font-size: 10px;
+				font-weight: 700;
+				letter-spacing: 0.8px;
+				color: #7a9e8a;
+				text-transform: uppercase;
+			}
+
+			.filter-all-row {
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+				margin-bottom: 10px;
+			}
+			.filter-all-pill {
+				display: flex;
+				align-items: center;
+				gap: 6px;
+				padding: 5px 12px;
+				border-radius: 20px;
+				background: #edf7f1;
+				border: 1.5px solid #c2e0ce;
+				cursor: pointer;
+				-webkit-tap-highlight-color: transparent;
+				transition: background 0.15s;
+			}
+			.filter-all-pill:has(input:checked) {
+				background: #d4f0e1;
+				border-color: #1a6b3c;
+			}
+			.filter-all-pill label {
+				font-size: 12px;
+				font-weight: 700;
+				color: #1a6b3c;
+				cursor: pointer;
+				margin: 0;
+			}
+
+			/* ─── ZOOM CONTROL CUSTOM ─── */
+			.leaflet-control-zoom {
+				border: none !important;
+				box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15) !important;
+				border-radius: 14px !important;
+				overflow: hidden;
+				margin-bottom: 16px !important;
+				margin-right: 16px !important;
+			}
+			.leaflet-control-zoom-in,
+			.leaflet-control-zoom-out {
+				width: 44px !important;
+				height: 44px !important;
+				line-height: 44px !important;
+				font-size: 20px !important;
+				font-weight: 400 !important;
+				color: #1a6b3c !important;
+				background: #ffffff !important;
+				border: none !important;
+				display: flex !important;
+				align-items: center !important;
+				justify-content: center !important;
+			}
+			.leaflet-control-zoom-in {
+				border-bottom: 1px solid #e8f2eb !important;
+			}
+			.leaflet-control-zoom-in:hover,
+			.leaflet-control-zoom-out:hover {
+				background: #f0faf4 !important;
+				color: #155c31 !important;
+			}
+
+			@media (max-width: 600px) {
+				/* Zoom di atas FAB filter (FAB di bottom:24px, tinggi 52px → zoom di bottom: 90px) */
+				.leaflet-bottom.leaflet-right {
+					bottom: 88px !important;
+					right: 0 !important;
+				}
+			}
+			/* ─── ATTRIBUTION OSM — kecil di pojok kiri bawah ─── */
+			.leaflet-control-attribution {
+				background: rgba(255, 255, 255, 0.65) !important;
+				backdrop-filter: blur(4px);
+				font-size: 9px !important;
+				padding: 2px 8px !important;
+				border-radius: 6px 6px 0 0 !important;
+				color: #aaa !important;
+				max-width: 260px;
+				line-height: 1.4;
+				box-shadow: none !important;
+				border: none !important;
+			}
+			.leaflet-control-attribution a,
+			.leaflet-control-attribution svg {
+				color: #aaa !important;
+				fill: #aaa !important;
+			}
+
+			.label-lokasi {
+				background: transparent !important;
+				border: none !important;
+				box-shadow: none !important;
+			}
+			.label-lokasi-inner {
+				font-family: "Plus Jakarta Sans", sans-serif;
+				font-size: 11px;
+				font-weight: 700;
+				color: #0f172a;
+				white-space: nowrap;
+				text-align: center;
+				margin-top: 4px;
+				padding: 2px 6px;
+				border-radius: 4px;
+				background: rgba(255, 255, 255, 0.82);
+				text-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+				pointer-events: none;
+			}
+			/* ─── POPUP MODERN ─── */
+			.leaflet-popup-content-wrapper {
+				padding: 0 !important;
+				border-radius: 20px !important;
+				background: #ffffff;
+				box-shadow:
+					0 12px 40px rgba(0, 0, 0, 0.18),
+					0 2px 8px rgba(0, 0, 0, 0.08) !important;
+				overflow: hidden;
+				border: none !important;
+			}
+			.leaflet-popup-content {
+				margin: 0 !important;
+				line-height: 1.4;
+				width: auto !important;
+			}
+			.leaflet-popup-tip-container {
+				margin-top: -1px;
+			}
+			.leaflet-popup-tip {
+				box-shadow: none !important;
+			}
+
+			/* Tombol close lebih besar & mudah ditekan jari */
+			.leaflet-popup-close-button {
+				top: 10px !important;
+				right: 10px !important;
+				width: 28px !important;
+				height: 28px !important;
+				border-radius: 50% !important;
+				background: rgba(0, 0, 0, 0.38) !important;
+				color: #fff !important;
+				font-size: 16px !important;
+				display: flex !important;
+				align-items: center !important;
+				justify-content: center !important;
+				line-height: 1 !important;
+				z-index: 10;
+				padding: 0 !important;
+			}
+			.leaflet-popup-close-button:hover {
+				background: rgba(0, 0, 0, 0.55) !important;
+			}
+
+			/* Foto carousel */
+			.popup-carousel {
+				width: 100%;
+				height: 145px;
+				border-radius: 0;
+				overflow: hidden;
+				margin-bottom: 0;
+				background-color: #e8f0eb;
+			}
+			.popup-carousel .carousel-item img {
+				width: 100%;
+				height: 145px;
+				object-fit: cover;
+			}
+			.popup-carousel .carousel-control-prev-icon,
+			.popup-carousel .carousel-control-next-icon {
+				width: 1rem;
+				height: 1rem;
+			}
+
+			/* Tombol aksi */
+			.popup-btn-wa {
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				gap: 7px;
+				width: 100%;
+				padding: 10px;
+				background: #1a6b3c;
+				color: #fff !important;
+				border-radius: 10px;
+				border: none;
+				font-size: 12px;
+				font-weight: 700;
+				text-decoration: none;
+				transition: background 0.15s;
+				-webkit-tap-highlight-color: transparent;
+			}
+			.popup-btn-wa:hover {
+				background: #155c31;
+				color: #fff !important;
+			}
+			.popup-btn-rute {
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				gap: 7px;
+				width: 100%;
+				padding: 9px;
+				background: transparent;
+				color: #1a6b3c !important;
+				border-radius: 10px;
+				border: 1.5px solid #c2dece;
+				font-size: 12px;
+				font-weight: 700;
+				text-decoration: none;
+				transition:
+					background 0.15s,
+					border-color 0.15s;
+				-webkit-tap-highlight-color: transparent;
+			}
+			.popup-btn-rute:hover {
+				background: #f0faf4;
+				border-color: #1a6b3c;
+			}
+		</style>
+	</head>
+	<body>
+		<nav class="navbar navbar-expand-lg navbar-dark shadow-sm">
+			<div class="container-fluid px-4">
+				<a
+					class="navbar-brand text-white d-flex align-items-center gap-2"
+					href="{{ url_for('public.index') }}"
+				>
+					<i
+						class="fas fa-arrow-left text-white me-1"
+						style="font-size: 14px"
+					></i>
+					<span
+						>Peta UMKM
+						<span style="color: #4ade80">Karang Harapan</span>
+					</span>
+				</a>
+				<div class="ms-auto d-flex align-items-center">
+					<span
+						class="badge d-flex align-items-center gap-2"
+						style="
+							background: rgba(255, 255, 255, 0.12);
+							border: 1px solid rgba(255, 255, 255, 0.25);
+							color: #ffffff;
+							font-size: 11px;
+							font-weight: 600;
+							padding: 6px 12px;
+							border-radius: 20px;
+						"
+					>
+						<i class="fas fa-store" style="font-size: 11px"></i>
+						<span id="navbarTotalUmkm">0</span> UMKM Terdaftar
+					</span>
+				</div>
+			</div>
+		</nav>
+
+		<div id="map"></div>
+
+		<!-- Overlay gelap (mobile) -->
+		<div id="bsOverlay" class="bs-overlay"></div>
+
+		<div
+			id="openFilterBtn"
+			class="toggle-filter-btn d-none"
+			title="Tampilkan Filter"
+		>
+			<i class="fas fa-sliders-h"></i>
+		</div>
+
+		<div id="filterPanel" class="filter-panel card">
+			<!-- Header -->
+			<div class="panel-header">
+				<div class="panel-header-row" style="width: 100%">
+					<div class="panel-header-left">
+						<div class="ph-icon">
+							<i class="fas fa-store"></i>
+						</div>
+						<h6>Filter UMKM</h6>
+					</div>
+					<a href="#" id="closeFilterBtn" class="close-panel-btn">
+						<i class="fas fa-chevron-down" style="font-size: 11px"></i>
+						<span>Tutup</span>
+					</a>
+				</div>
+			</div>
+
+			<!-- Body -->
+			<div class="panel-body">
+				<!-- Pencarian -->
+				<span class="panel-section-title d-block mb-2">Cari Tempat</span>
+				<div class="search-wrapper mb-3">
+					<i class="fas fa-search"></i>
+					<input
+						type="text"
+						id="searchInput"
+						class="form-control form-control-light"
+						placeholder="Ketik nama lokasi..."
+						autocomplete="off"
+					/>
+				</div>
+
+				<hr style="border-top: 1.5px solid #edf2ef; margin: 0 0 14px 0" />
+
+				<!-- Filter lapisan -->
+				<div class="filter-all-row">
+					<span class="panel-section-title">Filter Lapisan</span>
+					<label class="filter-all-pill">
+						<input
+							class="form-check-input"
+							type="checkbox"
+							id="filter-all"
+							checked
+							style="margin: 0"
+						/>
+						<span style="font-size: 12px; font-weight: 700; color: #1a6b3c"
+							>Semua</span
+						>
+					</label>
+				</div>
+
+				<div class="filter-list">
+					{% for k in kategori %}
+					<label class="filter-item" for="cat-{{ k.id }}">
+						<input
+							class="form-check-input filter-kategori me-2"
+							type="checkbox"
+							value="{{ k.id }}"
+							id="cat-{{ k.id }}"
+							checked
+						/>
+						<span
+							class="cat-icon-badge"
+							style="background-color:{{ k.warna }};"
+						>
+							<i class="fas {{ k.icon }}"></i>
+						</span>
+						<span
+							class="text-truncate"
+							style="
+								font-size: 13px;
+								font-weight: 600;
+								color: #1e3a2a;
+								max-width: 130px;
+							"
+						>
+							{{ k.nama_kategori }}
+						</span>
+						<span class="cat-count-badge">{{ k.lokasi|length }}</span>
+					</label>
+					{% endfor %}
+				</div>
+			</div>
+		</div>
+
+		<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+		<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+		<script>
+			const map = L.map('map', { zoomControl: false, attributionControl: false }).setView([3.350959, 117.542804], 14);
+			L.control.zoom({ position: 'bottomright' }).addTo(map);
+			L.control.attribution({ position: 'bottomleft', prefix: false })
+			    .addAttribution('© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>')
+			    .addTo(map);
+
+			L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+			    attribution: '',
+			    maxZoom: 19
+			}).addTo(map);
+
+			const allData = [
+			    {% for k in kategori %}
+			        {% for l in k.lokasi %}
+			        {
+			            id: {{ l.id }},
+			            nama: "{{ l.nama }}",
+			            lat: {{ l.latitude }},
+			            lng: {{ l.longitude }},
+			            alamat: "{{ l.alamat or '' }}",
+			            deskripsi: "{{ l.deskripsi or '' }}",
+			            foto: "{{ l.foto or '' }}", // Bisa berisi satu string nama file atau dipisahkan koma
+			            kontak: "{{ l.kontak or '' }}",
+			            kategori: "{{ k.nama_kategori }}",
+			            kategori_id: {{ k.id }},
+			            warna: "{{ k.warna }}",
+			            icon: "{{ k.icon }}"
+			        },
+			        {% endfor %}
+			    {% endfor %}
+			];
+
+			const allMarkers = [];
+
+			// Isi counter navbar
+			document.getElementById('navbarTotalUmkm').textContent = allData.length;
+
+			allData.forEach(lokasi => {
+			    const customIcon = L.divIcon({
+			        className: 'custom-div-icon',
+			        html: `<div style="background-color: ${lokasi.warna}; width: 44px; height: 44px; border-radius: 50%; border: 3px solid #ffffff; box-shadow: 0 4px 12px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center;">
+			            <i class="fas ${lokasi.icon}" style="color: #ffffff; font-size: 16px;"></i>
+			        </div>`,
+			        iconSize: [44, 44],
+			        iconAnchor: [22, 22],
+			        popupAnchor: [0, -22]
+			    });
+
+
+			    const kontakHtml = lokasi.kontak
+			        ? `<a href="https://wa.me/${lokasi.kontak.replace(/^0/, '62')}" target="_blank" class="popup-btn-wa mb-2">
+			            <i class="fab fa-whatsapp" style="font-size:14px;"></i> Hubungi Toko / Pengelola
+			           </a>`
+			        : '';
+
+			    // foto single — ikut rounded atas saja
+			    const fotoSingleStyle = `width:100%;height:145px;object-fit:cover;display:block;`;
+
+			    const popupContent = `
+			        <div style="font-family:'Plus Jakarta Sans',sans-serif;width:230px;color:#1e293b;overflow:hidden;">
+
+			            ${lokasi.foto ? (() => {
+			                const df = lokasi.foto.split(',').map(f=>f.trim()).filter(f=>f);
+			                if (df.length > 1) {
+			                    const cid = 'carousel-lokasi-' + lokasi.id;
+			                    const items = df.map((f,i)=>`<div class="carousel-item ${i===0?'active':''}"><img src="/static/uploads/lokasi_${lokasi.id}/${f}" alt="Foto ${i+1}"></div>`).join('');
+			                    return `<div id="${cid}" class="carousel slide popup-carousel" data-bs-ride="carousel" data-bs-interval="3000">
+			                        <div class="carousel-inner">${items}</div>
+			                        <button class="carousel-control-prev" type="button" data-bs-target="#${cid}" data-bs-slide="prev"><span class="carousel-control-prev-icon" aria-hidden="true"></span></button>
+			                        <button class="carousel-control-next" type="button" data-bs-target="#${cid}" data-bs-slide="next"><span class="carousel-control-next-icon" aria-hidden="true"></span></button>
+			                    </div>`;
+			                } else {
+			                    return `<img src="/static/uploads/lokasi_${lokasi.id}/${df[0]}" style="${fotoSingleStyle}">`;
+			                }
+			            })() : ''}
+
+			            <div style="padding:14px 14px 12px;">
+			                <div style="display:flex;align-items:center;gap:7px;margin-bottom:8px;">
+			                    <span style="background:${lokasi.warna};color:#fff;font-size:9.5px;font-weight:700;padding:3px 10px;border-radius:20px;letter-spacing:0.3px;">${lokasi.kategori}</span>
+			                </div>
+			                <h6 style="margin:0 0 5px;font-weight:800;font-size:14px;color:#0f172a;line-height:1.3;">${lokasi.nama}</h6>
+			                <p style="margin:0 0 ${lokasi.deskripsi?'6px':'10px'};font-size:11.5px;color:#64748b;display:flex;align-items:center;gap:5px;">
+			                    <i class="fas fa-map-marker-alt" style="color:#e74c3c;font-size:11px;flex-shrink:0;"></i>
+			                    ${lokasi.alamat || '-'}
+			                </p>
+			                ${lokasi.deskripsi ? `<p style="font-size:11px;color:#94a3b8;margin:0 0 12px;line-height:1.5;border-left:2.5px solid #e2e8f0;padding-left:8px;">${lokasi.deskripsi}</p>` : ''}
+			                <div style="display:flex;flex-direction:column;gap:7px;">
+			                    ${kontakHtml}
+			                    <a href="https://www.google.com/maps/dir/?api=1&destination=${lokasi.lat},${lokasi.lng}" target="_blank" class="popup-btn-rute">
+			                        <i class="fas fa-directions" style="font-size:13px;"></i> Petunjuk Rute Jalan
+			                    </a>
+			                </div>
+			            </div>
+
+			        </div>
+			    `;
+
+			    const marker = L.marker([lokasi.lat, lokasi.lng], { icon: customIcon }).bindPopup(popupContent);
+
+			    // Inisialisasi ulang instansi Carousel Bootstrap setiap kali Popup dibuka ke layar peta
+			    marker.on('popupopen', function() {
+			        const carouselEl = document.querySelector(`.popup-carousel`);
+			        if (carouselEl) {
+			            const bsCarousel = new bootstrap.Carousel(carouselEl, {
+			                interval: 3000,
+			                ride: 'carousel'
+			            });
+			            bsCarousel.cycle();
+			        }
+			    });
+
+			    marker.lokasi = lokasi;
+			    marker.addTo(map);
+			    allMarkers.push(marker);
+			});
+
+			// ─── LABEL NAMA LOKASI (muncul saat zoom ≥ 16) ───
+			const ZOOM_LABEL = 16;
+			const allLabels  = [];
+
+			allData.forEach(lokasi => {
+			    const labelIcon = L.divIcon({
+			        className: 'label-lokasi',
+			        html: `<div class="label-lokasi-inner">${lokasi.nama}</div>`,
+			        iconSize: null,
+			        iconAnchor: [-4, -6]  // geser kiri sedikit agar teks centered, naik 6px dari titik koordinat = tepat di bawah marker 44px
+			    });
+			    const labelMarker = L.marker([lokasi.lat, lokasi.lng], {
+			        icon: labelIcon,
+			        interactive: false,
+			        zIndexOffset: -1000
+			    });
+			    labelMarker.lokasiData = lokasi;
+			    allLabels.push(labelMarker);
+			});
+
+			function updateLabels() {
+			    const currentZoom  = map.getZoom();
+			    const aktifKategori = Array.from(document.querySelectorAll(".filter-kategori:checked"))
+			                              .map(cb => parseInt(cb.value));
+			    allLabels.forEach(lm => {
+			        const tampil = currentZoom >= ZOOM_LABEL &&
+			                       aktifKategori.includes(lm.lokasiData.kategori_id);
+			        if (tampil && !map.hasLayer(lm)) map.addLayer(lm);
+			        if (!tampil && map.hasLayer(lm))  map.removeLayer(lm);
+			    });
+			}
+			map.on('zoomend', updateLabels);
+			updateLabels();
+
+			// ─── LOGIKA PANEL (desktop + bottom sheet mobile) ───
+			const filterPanel  = document.getElementById("filterPanel");
+			const openFilterBtn = document.getElementById("openFilterBtn");
+			const closeFilterBtn = document.getElementById("closeFilterBtn");
+			const bsOverlay    = document.getElementById("bsOverlay");
+
+			function isMobile() { return window.innerWidth <= 600; }
+
+			function bukaPanel() {
+				openFilterBtn.classList.add("d-none");
+				filterPanel.classList.remove("minimized");
+				if (isMobile()) {
+					bsOverlay.classList.add("active");
+					document.body.style.overflow = "hidden";
+				}
+			}
+
+			function tutupPanel() {
+				filterPanel.classList.add("minimized");
+				bsOverlay.classList.remove("active");
+				document.body.style.overflow = "";
+				setTimeout(() => { openFilterBtn.classList.remove("d-none"); }, 150);
+			}
+
+			closeFilterBtn.addEventListener("click", function(e) { e.preventDefault(); tutupPanel(); });
+			openFilterBtn.addEventListener("click", bukaPanel);
+			bsOverlay.addEventListener("click", tutupPanel);
+
+			// Swipe ke bawah untuk menutup bottom sheet di mobile
+			let touchStartY = 0;
+			filterPanel.addEventListener("touchstart", function(e) {
+				touchStartY = e.touches[0].clientY;
+			}, { passive: true });
+			filterPanel.addEventListener("touchend", function(e) {
+				const diff = e.changedTouches[0].clientY - touchStartY;
+				if (diff > 60 && isMobile()) tutupPanel();
+			}, { passive: true });
+
+			// 5. PENYARING FILTER
+			document.getElementById("filter-all").addEventListener("change", function () {
+			    document.querySelectorAll(".filter-kategori").forEach(cb => { cb.checked = this.checked; });
+			    updateMarkers();
+			});
+
+			document.querySelectorAll(".filter-kategori").forEach(cb => {
+			    cb.addEventListener("change", function() {
+			        if(!this.checked) document.getElementById("filter-all").checked = false;
+			        updateMarkers();
+			    });
+			});
+
+			function updateMarkers() {
+			    const aktif = Array.from(document.querySelectorAll(".filter-kategori:checked")).map(cb => parseInt(cb.value));
+			    allMarkers.forEach(marker => {
+			        if (aktif.includes(marker.lokasi.kategori_id)) { map.addLayer(marker); }
+			        else { map.removeLayer(marker); }
+			    });
+			    updateLabels();
+			}
+
+			// 6. MESIN PENCARIAN
+			document.getElementById("searchInput").addEventListener("input", function () {
+			    const keyword = this.value.toLowerCase().trim();
+			    if (!keyword) return;
+
+			    const hasil = allData.filter(l =>
+			        l.nama.toLowerCase().includes(keyword) ||
+			        l.alamat.toLowerCase().includes(keyword) ||
+			        l.kategori.toLowerCase().includes(keyword)
+			    );
+
+			    if (hasil.length > 0) {
+			        map.setView([hasil[0].lat, hasil[0].lng], 16);
+			        const targetMarker = allMarkers.find(m => m.lokasi.id === hasil[0].id);
+			        if(targetMarker) {
+			            map.addLayer(targetMarker);
+			            targetMarker.openPopup();
+			        }
+			    }
+			});
+		</script>
+	</body>
+</html>
