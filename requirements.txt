@@ -1,6 +1,9 @@
 flask
 flask-sqlalchemy
 flask-login
+flask-mail
 pymysql
+cryptography
 werkzeug
 openpyxl
+gunicorn

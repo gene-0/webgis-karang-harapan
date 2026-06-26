@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.env
+venv/
+env/
+
+# Database lokal
+*.db
+*.sqlite
+
+# Upload foto (jangan push foto ke GitHub)
+app/static/uploads/*/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/

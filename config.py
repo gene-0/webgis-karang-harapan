@@ -1,24 +1,39 @@
 import os
 
 class Config:
-    SECRET_KEY = 'ganti-dengan-random-string-panjang'
-    
-    # Database
-    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://root:@localhost/webgis_karang_harapan'
+    # ─── SECRET KEY ───
+    # Di Railway: set environment variable SECRET_KEY
+    SECRET_KEY = os.environ.get('SECRET_KEY', 'ganti-ini-di-env-railway')
+
+    # ─── DATABASE ───
+    # Di Railway: otomatis terisi dari plugin MySQL Railway
+    # Format: mysql+pymysql://user:password@host:port/dbname
+    SQLALCHEMY_DATABASE_URI = os.environ.get(
+        'DATABASE_URL',
+        'mysql+pymysql://root:@localhost/webgis_karang_harapan'  # fallback lokal
+    )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    
-    # Upload foto (Setelan Asli Anda Tetap Dipertahankan)
-    UPLOAD_FOLDER = os.path.join('app', 'static', 'uploads')
-    MAX_CONTENT_LENGTH = 2 * 1024 * 1024  # Maks 2MB per foto
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        'pool_recycle': 280,       # cegah koneksi timeout di Railway
+        'pool_pre_ping': True,
+    }
+
+    # ─── UPLOAD FOTO ───
+    # Di Railway: file disimpan sementara di /tmp (persistent storage perlu Cloudinary)
+    UPLOAD_FOLDER = os.environ.get(
+        'UPLOAD_FOLDER',
+        os.path.join('app', 'static', 'uploads')
+    )
+    MAX_CONTENT_LENGTH = 2 * 1024 * 1024   # maks 2MB
     ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'webp'}
 
-    # ─── KONFIGURASI SMTP GMAIL GRATIS ───
-    MAIL_SERVER = 'smtp.gmail.com'
-    MAIL_PORT = 587
-    MAIL_USE_TLS = True
-    MAIL_USERNAME = 'wibowoprawiro4@gmail.com' 
-    
-    # Tempel 16 digit kode dari Google di bawah ini (TANPA SPASI)
-    MAIL_PASSWORD = 'xopwtlevfbekyhtj'  
-    
-    MAIL_DEFAULT_SENDER = ('WebGIS Kelurahan (Demo)', 'wibowoprawiro4@gmail.com')
+    # ─── EMAIL (SMTP Gmail) ───
+    MAIL_SERVER   = 'smtp.gmail.com'
+    MAIL_PORT     = 587
+    MAIL_USE_TLS  = True
+    MAIL_USERNAME = os.environ.get('MAIL_USERNAME', '')
+    MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD', '')
+    MAIL_DEFAULT_SENDER = (
+        'UMKM Karang Harapan',
+        os.environ.get('MAIL_USERNAME', '')
+    )
