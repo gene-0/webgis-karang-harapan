@@ -22,6 +22,14 @@
 			rel="stylesheet"
 			href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
 		/>
+		<link
+			rel="stylesheet"
+			href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"
+		/>
+		<link
+			rel="stylesheet"
+			href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css"
+		/>
 
 		<style>
 			body {
@@ -44,12 +52,44 @@
 				background-color: #1a6b3c !important;
 				box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 				z-index: 1010;
+				position: relative;
 			}
 
 			.navbar-brand {
 				font-weight: 700;
 				letter-spacing: -0.5px;
 				font-size: 16px;
+				flex-shrink: 1;
+				min-width: 0;
+				overflow: hidden;
+				white-space: nowrap;
+				text-overflow: ellipsis;
+			}
+
+			/* Badge total UMKM — tidak melar di mobile */
+			.badge-umkm {
+				display: inline-flex;
+				align-items: center;
+				gap: 5px;
+				background: rgba(255, 255, 255, 0.15);
+				border: 1px solid rgba(255, 255, 255, 0.3);
+				color: #ffffff;
+				font-size: 11px;
+				font-weight: 600;
+				padding: 5px 10px;
+				border-radius: 20px;
+				white-space: nowrap;
+				flex-shrink: 0;
+			}
+
+			/* Map height — pastikan tidak terpotong */
+			#map {
+				position: fixed;
+				top: 65px;
+				left: 0;
+				right: 0;
+				bottom: 0;
+				background-color: #e9ecef;
 			}
 
 			/* ══════════════════════════════════════
@@ -408,14 +448,55 @@
 				margin: 0;
 			}
 
-			/* ─── ZOOM CONTROL CUSTOM ─── */
+			/* ─── MARKER CLUSTER CUSTOM ─── */
+			.marker-cluster {
+				background: transparent !important;
+			}
+			.marker-cluster div {
+				background: transparent !important;
+			}
+			.cluster-icon {
+				width: 44px;
+				height: 44px;
+				border-radius: 50%;
+				background: #1a6b3c;
+				border: 3px solid #ffffff;
+				box-shadow: 0 4px 14px rgba(26, 107, 60, 0.45);
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				flex-direction: column;
+				color: #ffffff;
+				font-family: "Plus Jakarta Sans", sans-serif;
+				font-weight: 800;
+				font-size: 13px;
+				line-height: 1;
+				transition: transform 0.15s ease;
+			}
+			.cluster-icon.medium {
+				width: 52px;
+				height: 52px;
+				background: #155c31;
+				font-size: 14px;
+			}
+			.cluster-icon.large {
+				width: 60px;
+				height: 60px;
+				background: #0f3d22;
+				font-size: 15px;
+			}
+			.cluster-icon:hover {
+				transform: scale(1.1);
+			}
+
+			/* ─── ZOOM CONTROL — posisi aman di mobile ─── */
 			.leaflet-control-zoom {
 				border: none !important;
 				box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15) !important;
 				border-radius: 14px !important;
 				overflow: hidden;
-				margin-bottom: 16px !important;
 				margin-right: 16px !important;
+				margin-bottom: 16px !important;
 			}
 			.leaflet-control-zoom-in,
 			.leaflet-control-zoom-out {
@@ -441,7 +522,7 @@
 			}
 
 			@media (max-width: 600px) {
-				/* Zoom di atas FAB filter (FAB di bottom:24px, tinggi 52px → zoom di bottom: 90px) */
+				/* Zoom di atas FAB filter */
 				.leaflet-bottom.leaflet-right {
 					bottom: 88px !important;
 					right: 0 !important;
@@ -475,15 +556,17 @@
 				font-family: "Plus Jakarta Sans", sans-serif;
 				font-size: 11px;
 				font-weight: 700;
-				color: #0f172a;
 				white-space: nowrap;
-				text-align: center;
-				margin-top: 4px;
-				padding: 2px 6px;
-				border-radius: 4px;
-				background: rgba(255, 255, 255, 0.82);
-				text-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
 				pointer-events: none;
+				position: relative;
+				left: 22px; /* samping kanan marker 36px */
+				top: -8px; /* setengah tinggi marker (36/2=18) + setengah tinggi teks (~4px) */
+				text-shadow:
+					-1px -1px 0 rgba(255, 255, 255, 0.95),
+					1px -1px 0 rgba(255, 255, 255, 0.95),
+					-1px 1px 0 rgba(255, 255, 255, 0.95),
+					1px 1px 0 rgba(255, 255, 255, 0.95),
+					0 0 4px rgba(255, 255, 255, 0.8);
 			}
 			/* ─── POPUP MODERN ─── */
 			.leaflet-popup-content-wrapper {
@@ -613,20 +696,9 @@
 					</span>
 				</a>
 				<div class="ms-auto d-flex align-items-center">
-					<span
-						class="badge d-flex align-items-center gap-2"
-						style="
-							background: rgba(255, 255, 255, 0.12);
-							border: 1px solid rgba(255, 255, 255, 0.25);
-							color: #ffffff;
-							font-size: 11px;
-							font-weight: 600;
-							padding: 6px 12px;
-							border-radius: 20px;
-						"
-					>
-						<i class="fas fa-store" style="font-size: 11px"></i>
-						<span id="navbarTotalUmkm">0</span> UMKM Terdaftar
+					<span class="badge-umkm">
+						<i class="fas fa-store" style="font-size: 10px"></i>
+						<span id="navbarTotalUmkm">0</span> UMKM
 					</span>
 				</div>
 			</div>
@@ -732,6 +804,7 @@
 
 		<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 		<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+		<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
 
 		<script>
 			const map = L.map('map', { zoomControl: false, attributionControl: false }).setView([3.350959, 117.542804], 14);
@@ -771,15 +844,32 @@
 			// Isi counter navbar
 			document.getElementById('navbarTotalUmkm').textContent = allData.length;
 
+			// ─── MARKER CLUSTER GROUP ───
+			const clusterGroup = L.markerClusterGroup({
+			    maxClusterRadius: 60,
+			    disableClusteringAtZoom: 17,
+			    spiderfyOnMaxZoom: true,
+			    showCoverageOnHover: false,
+			    iconCreateFunction: function(cluster) {
+			        const count = cluster.getChildCount();
+			        let sizeClass = count < 5 ? '' : count < 10 ? 'medium' : 'large';
+			        return L.divIcon({
+			            html: `<div class="cluster-icon ${sizeClass}">${count}</div>`,
+			            className: '',
+			            iconSize: L.point(44, 44)
+			        });
+			    }
+			});
+
 			allData.forEach(lokasi => {
 			    const customIcon = L.divIcon({
 			        className: 'custom-div-icon',
-			        html: `<div style="background-color: ${lokasi.warna}; width: 44px; height: 44px; border-radius: 50%; border: 3px solid #ffffff; box-shadow: 0 4px 12px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center;">
-			            <i class="fas ${lokasi.icon}" style="color: #ffffff; font-size: 16px;"></i>
+			        html: `<div style="background-color: ${lokasi.warna}; width: 36px; height: 36px; border-radius: 50%; border: 2.5px solid #ffffff; box-shadow: 0 3px 8px rgba(0,0,0,0.25); display: flex; align-items: center; justify-content: center;">
+			            <i class="fas ${lokasi.icon}" style="color: #ffffff; font-size: 14px;"></i>
 			        </div>`,
-			        iconSize: [44, 44],
-			        iconAnchor: [22, 22],
-			        popupAnchor: [0, -22]
+			        iconSize: [36, 36],
+			        iconAnchor: [18, 18],
+			        popupAnchor: [0, -18]
 			    });
 
 
@@ -846,20 +936,22 @@
 			    });
 
 			    marker.lokasi = lokasi;
-			    marker.addTo(map);
+			    clusterGroup.addLayer(marker);
 			    allMarkers.push(marker);
 			});
 
-			// ─── LABEL NAMA LOKASI (muncul saat zoom ≥ 16) ───
-			const ZOOM_LABEL = 16;
+			map.addLayer(clusterGroup);
+
+			// ─── LABEL NAMA LOKASI (hanya muncul saat marker sudah terpisah dari cluster) ───
+			const ZOOM_LABEL = 17; // Sinkron dengan disableClusteringAtZoom: 17
 			const allLabels  = [];
 
 			allData.forEach(lokasi => {
 			    const labelIcon = L.divIcon({
 			        className: 'label-lokasi',
-			        html: `<div class="label-lokasi-inner">${lokasi.nama}</div>`,
+			        html: `<div class="label-lokasi-inner" style="color:${lokasi.warna};">${lokasi.nama}</div>`,
 			        iconSize: null,
-			        iconAnchor: [-4, -6]  // geser kiri sedikit agar teks centered, naik 6px dari titik koordinat = tepat di bawah marker 44px
+			        iconAnchor: [0, 0]
 			    });
 			    const labelMarker = L.marker([lokasi.lat, lokasi.lng], {
 			        icon: labelIcon,
@@ -871,7 +963,7 @@
 			});
 
 			function updateLabels() {
-			    const currentZoom  = map.getZoom();
+			    const currentZoom   = map.getZoom();
 			    const aktifKategori = Array.from(document.querySelectorAll(".filter-kategori:checked"))
 			                              .map(cb => parseInt(cb.value));
 			    allLabels.forEach(lm => {
@@ -881,7 +973,11 @@
 			        if (!tampil && map.hasLayer(lm))  map.removeLayer(lm);
 			    });
 			}
+
 			map.on('zoomend', updateLabels);
+			// Sembunyikan label saat sedang animasi cluster, munculkan setelah selesai
+			map.on('zoomstart', () => allLabels.forEach(lm => { if (map.hasLayer(lm)) map.removeLayer(lm); }));
+			clusterGroup.on('animationend', updateLabels);
 			updateLabels();
 
 			// ─── LOGIKA PANEL (desktop + bottom sheet mobile) ───
@@ -937,9 +1033,11 @@
 
 			function updateMarkers() {
 			    const aktif = Array.from(document.querySelectorAll(".filter-kategori:checked")).map(cb => parseInt(cb.value));
+			    clusterGroup.clearLayers();
 			    allMarkers.forEach(marker => {
-			        if (aktif.includes(marker.lokasi.kategori_id)) { map.addLayer(marker); }
-			        else { map.removeLayer(marker); }
+			        if (aktif.includes(marker.lokasi.kategori_id)) {
+			            clusterGroup.addLayer(marker);
+			        }
 			    });
 			    updateLabels();
 			}
